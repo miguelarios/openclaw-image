@@ -48,11 +48,13 @@ RUN apt-get update && apt-get upgrade -y \
     ffmpeg imagemagick libimage-exiftool-perl \
     pandoc \
     python3 \
+    python3-pip \
     xvfb \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
   && ln -sf /usr/bin/fdfind /usr/local/bin/fd \
-  && ln -sf /usr/bin/python3 /usr/bin/python
+  && ln -sf /usr/bin/python3 /usr/bin/python \
+  && ln -sf /usr/bin/pip3 /usr/local/bin/pip
 
 
 # ── 2. GitHub CLI ────────────────────────────────────────────────────
