@@ -44,16 +44,23 @@ jobs:
           docker run --rm -v "$PWD:/repo" -w /repo \
             zricethezav/gitleaks:latest detect --source . --no-banner --redact
 
-      # The tag tracks the upstream base version. Rebuilds of the same base
-      # overwrite it; homelab pins the digest, so deploys stay immutable and
-      # Renovate opens the bump PR when the digest moves.
+      # Tag is <upstream base version>-<run number>, and is never reused.
+      #
+      # Uniqueness is load-bearing because homelab pins the tag alone, with no
+      # @sha256 digest. Compose compares the image *reference string*, not the
+      # resolved digest — so an overwritten tag means `up -d` sees no change
+      # and will not recreate the container even though a new image exists.
+      # A fresh tag per build is what makes the deploy declarative, gives
+      # Renovate something to bump, and makes rollback a `git revert`.
       - name: Derive tag from base image
         id: meta
         run: |
           set -euo pipefail
-          tag=$(grep -oP '^ARG BASE_VERSION=\K\S+' Dockerfile)
+          base=$(grep -oP '^ARG BASE_VERSION=\K\S+' Dockerfile)
+          tag="${base}-${{ github.run_number }}"
+          echo "base=$base" >> "$GITHUB_OUTPUT"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
-          echo "base version: $tag"
+          echo "base $base -> tag $tag"
 
       - uses: docker/setup-buildx-action@v3
 
@@ -88,7 +95,9 @@ jobs:
         run: docker push "${{ env.IMAGE }}:${{ steps.meta.outputs.tag }}"
 
       # Print the exact line to paste into homelab's openclaw/compose.yaml.
-      - name: Report digest
+      # The digest is reported alongside it for the record only — it is not
+      # part of the deploy line, by choice.
+      - name: Report deploy line
         run: |
           set -euo pipefail
           digest=$(docker inspect --format '{{index .RepoDigests 0}}' \
@@ -97,6 +106,9 @@ jobs:
             echo "## Deploy line"
             echo
             echo '```yaml'
-            echo "image: ${{ env.IMAGE }}:${{ steps.meta.outputs.tag }}@${digest#*@}"
+            echo "image: ${{ env.IMAGE }}:${{ steps.meta.outputs.tag }}"
             echo '```'
+            echo
+            echo "Built from base \`${{ steps.meta.outputs.base }}\`."
+            echo "Digest for the record: \`${digest#*@}\`"
           } >> "$GITHUB_STEP_SUMMARY"

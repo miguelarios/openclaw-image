@@ -6,8 +6,15 @@
 # extract nothing while the build still succeeds. That failure used to surface
 # on the server at deploy time; now it surfaces here.
 #
-# Every binary below was verified present in the running container before this
-# list was written. If one goes MISSING, the build genuinely regressed.
+# Two levels of check:
+#   BINS      — must be on PATH. Catches a tool that never got installed.
+#   VERSIONED — must also *run* and report a version. Catches a tool that
+#               installed but is broken: a native binding that resolved to the
+#               wrong platform, a Python entry point whose imports fail, a
+#               truncated download that is still executable.
+#
+# Presence alone is too weak for anything with a native or dynamic component,
+# which is most of what this image adds.
 set -euo pipefail
 
 IMAGE="${1:?usage: smoke-test.sh <image-ref>}"
@@ -25,6 +32,22 @@ python3 python pip nano-pdf transcribe
 markitdown faker anydoc
 "
 
+# Everything this image deliberately installs. Excluded on purpose:
+#   clawhub   — no version flag at all (`error: unknown option '--version'`)
+#   nano-pdf  — prints usage instead of a version
+#   uvx, and the base OS utilities — provided by Debian, not by us
+VERSIONED="
+gh yq yt-dlp jq
+gog gws camsnap goplaces sonos spogo xurl
+uv bun
+claude gemini td mcporter
+node chromium
+ffmpeg exiftool pandoc tesseract
+rg fd sqlite3
+python3 pip
+markitdown faker anydoc transcribe
+"
+
 echo "==> binary presence check: $IMAGE"
 docker run --rm --entrypoint /bin/sh "$IMAGE" -c '
   fail=0
@@ -39,11 +62,32 @@ docker run --rm --entrypoint /bin/sh "$IMAGE" -c '
   exit $fail
 '
 
-echo "==> pinned tool versions"
+# Flags are discovered rather than hardcoded: these tools come from Go, Rust,
+# Node and Python ecosystems and do not agree on one. Anything that only emits
+# usage text or rejects the flag is treated as "no version reported" and moves
+# on to the next candidate; exhausting all four is a failure.
+echo "==> version check (must actually execute)"
 docker run --rm --entrypoint /bin/sh "$IMAGE" -c '
-  yq --version
-  gog --version 2>/dev/null || true
-  yt-dlp --version
+  fail=0
+  for b in '"$(echo "$VERSIONED" | tr "\n" " ")"'; do
+    got=""
+    for flag in --version -V version -ver; do
+      if out=$(timeout 20 "$b" "$flag" 2>&1); then
+        case "$out" in
+          Usage:*|usage:*|Syntax:*|*"unknown option"*|*"unrecognized"*|"") continue ;;
+        esac
+        got=$(printf "%s" "$out" | head -1 | cut -c1-52)
+        break
+      fi
+    done
+    if [ -n "$got" ]; then
+      printf "  ok       %-11s %s\n" "$b" "$got"
+    else
+      printf "  BROKEN   %-11s (installed but will not report a version)\n" "$b"
+      fail=1
+    fi
+  done
+  exit $fail
 '
 
 echo "==> openclaw entrypoint responds"
