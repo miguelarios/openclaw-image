@@ -3,6 +3,13 @@ name: build
 on:
   push:
     branches: [main]
+    # Nothing outside the build inputs can change the image, and a rebuild is
+    # ~4 minutes and a 4 GB push. Editing the README or Renovate config should
+    # not trigger one.
+    paths-ignore:
+      - 'README.md'
+      - 'renovate.json'
+      - '.gitignore'
   workflow_dispatch:
     inputs:
       refresh_floating:

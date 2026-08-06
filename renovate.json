@@ -2,8 +2,10 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
   "timezone": "America/Chicago",
-
-  "//": "Every dependency here is declared as an ARG carrying a `# renovate:` comment. One custom manager covers all of them; adding a tool means adding an ARG, not editing this file.",
+  "description": [
+    "Every tracked dependency is an ARG in the Dockerfile carrying a '# renovate:' comment, so adding a tool means adding an ARG rather than editing this file.",
+    "The npm CLIs (claude-code, gemini-cli, codex, todoist-cli, mcporter, clawhub) are deliberately unpinned and therefore invisible here. Measured cadence makes tracking impractical: codex ~3666 releases/yr, gemini-cli ~629, claude-code ~316. They refresh whenever the floating layer rebuilds, which a base-image bump does anyway."
+  ],
 
   "customManagers": [
     {
@@ -26,14 +28,12 @@
       "allowedVersions": "!/beta|alpha|rc/"
     },
     {
-      "description": "Pinned CLI binaries. Combined cadence is ~30-60/yr, so one grouped weekly PR keeps it to ~1 rebuild a week.",
-      "matchDatasources": ["github-releases"],
+      "description": "Pinned release binaries and language-ecosystem tools. Combined cadence ~30-60/yr, so one grouped weekly PR keeps this to about one extra rebuild a week.",
+      "matchDatasources": ["github-releases", "pypi", "npm"],
       "groupName": "cli tools",
       "schedule": ["before 6am on monday"]
     }
   ],
-
-  "//2": "The npm CLIs (claude-code, gemini-cli, codex, todoist-cli, mcporter, clawhub) are deliberately NOT pinned in the Dockerfile and therefore invisible to Renovate. Their cadence makes tracking impractical: codex ~3600 releases/yr, gemini-cli ~630, claude-code ~316. They refresh whenever the floating layer rebuilds.",
 
   "prConcurrentLimit": 3,
   "dependencyDashboard": true
