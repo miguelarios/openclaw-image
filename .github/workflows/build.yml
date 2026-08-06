@@ -80,7 +80,7 @@ jobs:
       # Build and load locally — deliberately NOT pushed here. The smoke test
       # below gates the push, because a green build does not mean a usable image.
       - name: Build
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           load: true
