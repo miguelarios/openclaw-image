@@ -71,13 +71,22 @@ docker run --rm --entrypoint /bin/sh "$IMAGE" -c '
   fail=0
   for b in '"$(echo "$VERSIONED" | tr "\n" " ")"'; do
     got=""
-    for flag in --version -V version -ver; do
+    for flag in --version -version -V version -ver; do
       if out=$(timeout 20 "$b" "$flag" 2>&1); then
         case "$out" in
           Usage:*|usage:*|Syntax:*|*"unknown option"*|*"unrecognized"*|"") continue ;;
         esac
-        got=$(printf "%s" "$out" | head -1 | cut -c1-52)
-        break
+        # Drop log noise before picking the version line. markitdown emits an
+        # onnxruntime warning on startup, and taking head -1 blindly accepted
+        # that warning as the version — a pass that proved nothing.
+        line=$(printf "%s\n" "$out" \
+                 | grep -vE "^[0-9]{4}-[0-9]{2}-[0-9]{2}|\[W:|\[E:|WARNING|Warning:" \
+                 | grep -vE "^[[:space:]]*$" \
+                 | head -1)
+        # A version string contains a digit. Anything else is banner text.
+        case "$line" in
+          *[0-9]*) got=$(printf "%s" "$line" | cut -c1-52); break ;;
+        esac
       fi
     done
     if [ -n "$got" ]; then
