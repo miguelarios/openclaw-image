@@ -22,6 +22,7 @@ chromium
 ffmpeg convert exiftool pandoc tesseract pdftotext
 rg fd sqlite3 file dos2unix tree zip unzip lsof ping
 python3 python pip nano-pdf transcribe
+markitdown faker anydoc
 "
 
 echo "==> binary presence check: $IMAGE"

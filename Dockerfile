@@ -103,7 +103,7 @@ ENV PATH="/opt/bun/bin:$PATH"
 ARG FLOATING_REFRESH=0
 
 RUN echo "refresh=${FLOATING_REFRESH}" >/dev/null \
-  && uv pip install --system --break-system-packages nano-pdf transcriber-cli
+  && uv pip install --system --break-system-packages nano-pdf
 
 # npm globals install to the system prefix — this must stay ABOVE the
 # NPM_CONFIG_PREFIX assignment further down, or they land in /home/node
@@ -177,6 +177,33 @@ RUN set -euo pipefail; \
     fetch "https://github.com/steipete/sonoscli/releases/download/${SONOSCLI_VERSION}/sonoscli_${SONOSCLI_VERSION#v}_linux_amd64.tar.gz" sonos;    \
     fetch "https://github.com/openclaw/spogo/releases/download/${SPOGO_VERSION}/spogo_${SPOGO_VERSION#v}_spogo_linux_amd64_v1.tar.gz"   spogo;    \
     fetch "https://github.com/xdevplatform/xurl/releases/download/${XURL_VERSION}/xurl_Linux_x86_64.tar.gz"                             xurl
+
+
+# ── 8. Pinned Python / npm tools ─────────────────────────────────────
+# These ship rarely enough to track, unlike the CLIs in band 6.
+
+# renovate: datasource=pypi depName=markitdown
+ARG MARKITDOWN_VERSION=0.1.7
+# renovate: datasource=pypi depName=Faker
+ARG FAKER_VERSION=40.36.0
+# renovate: datasource=pypi depName=transcriber-cli
+ARG TRANSCRIBER_CLI_VERSION=0.2.0
+# renovate: datasource=npm depName=@firecrawl/anydoc
+ARG ANYDOC_VERSION=0.1.6
+
+# markitdown's format converters are optional extras — the bare package cannot
+# read pdf/docx/pptx/xlsx at all. The document extras are selected explicitly
+# rather than using [all], which additionally drags in the Azure Document
+# Intelligence and OpenAI SDKs that nothing here uses.
+RUN uv pip install --system --break-system-packages \
+      "markitdown[pdf,docx,pptx,xlsx,xls,outlook]==${MARKITDOWN_VERSION}" \
+      "Faker==${FAKER_VERSION}" \
+      "transcriber-cli==${TRANSCRIBER_CLI_VERSION}"
+
+# anydoc's Python wheel ships no console script — the CLI exists only in the
+# npm package. Installs globally, so this must stay ABOVE the
+# NPM_CONFIG_PREFIX assignment below.
+RUN npm install -g "@firecrawl/anydoc@${ANYDOC_VERSION}"
 
 
 # ── Runtime package-manager paths ────────────────────────────────────
