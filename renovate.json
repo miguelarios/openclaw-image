@@ -20,12 +20,12 @@
 
   "packageRules": [
     {
-      "description": "Base image ships ~104 stable releases/yr (~2/week). Batch into one weekly PR rather than nine a month, and never take a beta.",
+      "description": "Base image ships ~104 stable releases/yr (~2/week), tagged 2026.7.1 or 2026.7.1-2 where the suffix is a rebuild of the same version. Default semver reads that suffix as a PRERELEASE, so ignoreUnstable silently skipped every -N tag and no base bump was ever offered. The regex treats the suffix as a build number instead, and its shape excludes the -beta.N, -slim, -amd64 and -arm64 variants that upstream also publishes, so allowedVersions is no longer needed.",
       "matchDatasources": ["docker"],
+      "matchPackageNames": ["ghcr.io/openclaw/openclaw"],
+      "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)(?:-(?<build>\\d+))?$",
       "groupName": "openclaw base image",
-      "schedule": ["before 6am on monday"],
-      "ignoreUnstable": true,
-      "allowedVersions": "!/beta|alpha|rc/"
+      "schedule": ["before 6am on monday"]
     },
     {
       "description": "Pinned release binaries and language-ecosystem tools. Combined cadence ~30-60/yr, so one grouped weekly PR keeps this to about one extra rebuild a week.",
