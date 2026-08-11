@@ -19,7 +19,7 @@
 # must use datasource=docker here, never github-releases.
 
 # renovate: datasource=docker depName=ghcr.io/openclaw/openclaw
-ARG BASE_VERSION=2026.7.1
+ARG BASE_VERSION=2026.7.1-2
 FROM ghcr.io/openclaw/openclaw:${BASE_VERSION}
 
 USER root
