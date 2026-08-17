@@ -126,7 +126,7 @@ ARG YQ_VERSION=v4.53.3
 # renovate: datasource=github-releases depName=yt-dlp/yt-dlp versioning=loose
 ARG YTDLP_VERSION=2026.07.04
 # renovate: datasource=github-releases depName=openclaw/gogcli
-ARG GOGCLI_VERSION=v0.35.0
+ARG GOGCLI_VERSION=v0.37.0
 # gws is being replaced by gog, but ~22 skills (gws-gmail, gws-calendar,
 # gws-drive, gws-sheets, gws-docs, gws-slides, gws-people, and the recipe-*
 # family) still shell out to `gws`. Both ship until those are migrated; drop
@@ -189,7 +189,7 @@ ARG FAKER_VERSION=40.36.0
 # renovate: datasource=pypi depName=transcriber-cli
 ARG TRANSCRIBER_CLI_VERSION=0.2.0
 # renovate: datasource=npm depName=@firecrawl/anydoc
-ARG ANYDOC_VERSION=0.1.8
+ARG ANYDOC_VERSION=0.1.9
 
 # markitdown's format converters are optional extras — the bare package cannot
 # read pdf/docx/pptx/xlsx at all. The document extras are selected explicitly
