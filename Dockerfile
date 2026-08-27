@@ -122,11 +122,11 @@ RUN echo "refresh=${FLOATING_REFRESH}" >/dev/null \
 # goreleaser-style tarballs: <name>_<version-no-v>_linux_amd64.tar.gz
 
 # renovate: datasource=github-releases depName=mikefarah/yq
-ARG YQ_VERSION=v4.53.3
+ARG YQ_VERSION=v4.53.6
 # renovate: datasource=github-releases depName=yt-dlp/yt-dlp versioning=loose
-ARG YTDLP_VERSION=2026.07.04
+ARG YTDLP_VERSION=2026.08.19
 # renovate: datasource=github-releases depName=openclaw/gogcli
-ARG GOGCLI_VERSION=v0.37.0
+ARG GOGCLI_VERSION=v0.38.1
 # gws is being replaced by gog, but ~22 skills (gws-gmail, gws-calendar,
 # gws-drive, gws-sheets, gws-docs, gws-slides, gws-people, and the recipe-*
 # family) still shell out to `gws`. Both ship until those are migrated; drop
@@ -135,13 +135,13 @@ ARG GOGCLI_VERSION=v0.37.0
 # renovate: datasource=github-releases depName=googleworkspace/cli
 ARG GWS_VERSION=v0.22.5
 # renovate: datasource=github-releases depName=steipete/camsnap
-ARG CAMSNAP_VERSION=v0.4.0
+ARG CAMSNAP_VERSION=v0.4.1
 # renovate: datasource=github-releases depName=openclaw/goplaces
-ARG GOPLACES_VERSION=v0.4.4
+ARG GOPLACES_VERSION=v0.4.9
 # renovate: datasource=github-releases depName=steipete/sonoscli
 ARG SONOSCLI_VERSION=v0.3.4
 # renovate: datasource=github-releases depName=openclaw/spogo
-ARG SPOGO_VERSION=v0.10.3
+ARG SPOGO_VERSION=v0.10.7
 # renovate: datasource=github-releases depName=xdevplatform/xurl
 ARG XURL_VERSION=v1.3.1
 
@@ -185,11 +185,11 @@ RUN set -euo pipefail; \
 # renovate: datasource=pypi depName=markitdown
 ARG MARKITDOWN_VERSION=0.1.7
 # renovate: datasource=pypi depName=Faker
-ARG FAKER_VERSION=40.36.0
+ARG FAKER_VERSION=40.37.0
 # renovate: datasource=pypi depName=transcriber-cli
 ARG TRANSCRIBER_CLI_VERSION=0.2.0
 # renovate: datasource=npm depName=@firecrawl/anydoc
-ARG ANYDOC_VERSION=0.1.9
+ARG ANYDOC_VERSION=0.2.4
 
 # markitdown's format converters are optional extras — the bare package cannot
 # read pdf/docx/pptx/xlsx at all. The document extras are selected explicitly
