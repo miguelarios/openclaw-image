@@ -4,6 +4,7 @@
   "timezone": "America/Chicago",
   "description": [
     "Every tracked dependency is an ARG in the Dockerfile carrying a '# renovate:' comment, so adding a tool means adding an ARG rather than editing this file.",
+    "Renovate updates release versions but cannot infer upstream asset filename changes. release-assets.sh is the shared URL manifest, and the validate release assets workflow blocks broken Renovate bumps before merge.",
     "The npm CLIs (claude-code, gemini-cli, codex, todoist-cli, mcporter, clawhub) are deliberately unpinned and therefore invisible here. Measured cadence makes tracking impractical: codex ~3666 releases/yr, gemini-cli ~629, claude-code ~316. They refresh whenever the floating layer rebuilds, which a base-image bump does anyway."
   ],
 
