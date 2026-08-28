@@ -145,24 +145,26 @@ ARG SPOGO_VERSION=v0.10.7
 # renovate: datasource=github-releases depName=xdevplatform/xurl
 ARG XURL_VERSION=v1.3.1
 
-# fetch() takes a full URL because these projects do NOT share one asset
-# convention, and the convention is not stable over time. spogo changed from
-# `spogo_0.10.1_linux_amd64.tar.gz` to `spogo_0.10.3_spogo_linux_amd64_v1.tar.gz`
-# at v0.10.2, which silently broke the previous string-templated version of this
-# Dockerfile. Assume the next one will move too.
+# Asset URLs live in release-assets.sh, which is also used by the lightweight
+# pull-request check. Renovate can discover new release versions, but GitHub's
+# datasource does not expose a stable asset-name template. Keeping one shared
+# manifest makes asset renames explicit and lets CI reject a broken URL before
+# the version bump reaches main.
 #
 # Extraction goes via a temp dir + `find` rather than `tar xz <name>` because
 # archive layouts differ: gogcli ships `gog` at the root, spogo ships `./spogo`.
 # If the binary isn't in the tarball, this fails loudly instead of leaving a
 # working-looking image with a missing tool.
+COPY release-assets.sh /tmp/release-assets.sh
 RUN set -euo pipefail; \
-    curl -fsSL -o /usr/local/bin/yq \
-      "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64"; \
-    curl -fsSL -o /usr/local/bin/yt-dlp \
-      "https://github.com/yt-dlp/yt-dlp/releases/download/${YTDLP_VERSION}/yt-dlp"; \
-    chmod +x /usr/local/bin/yq /usr/local/bin/yt-dlp; \
-    fetch() { \
-      local url="$1" bin="$2" tmp found; \
+    source /tmp/release-assets.sh; \
+    install_asset() { \
+      local kind="$1" bin="$2" url="$3" tmp found; \
+      if [ "$kind" = raw ]; then \
+        curl -fsSL -o "/usr/local/bin/$bin" "$url"; \
+        chmod +x "/usr/local/bin/$bin"; \
+        return; \
+      fi; \
       tmp="$(mktemp -d)"; \
       curl -fsSL "$url" | tar xz -C "$tmp"; \
       found="$(find "$tmp" -type f -name "$bin" -print -quit)"; \
@@ -170,13 +172,10 @@ RUN set -euo pipefail; \
       install -m 0755 "$found" "/usr/local/bin/$bin"; \
       rm -rf "$tmp"; \
     }; \
-    fetch "https://github.com/openclaw/gogcli/releases/download/${GOGCLI_VERSION}/gogcli_${GOGCLI_VERSION#v}_linux_amd64.tar.gz"        gog;      \
-    fetch "https://github.com/googleworkspace/cli/releases/download/${GWS_VERSION}/google-workspace-cli-x86_64-unknown-linux-musl.tar.gz" gws;    \
-    fetch "https://github.com/steipete/camsnap/releases/download/${CAMSNAP_VERSION}/camsnap_${CAMSNAP_VERSION#v}_linux_amd64.tar.gz"    camsnap;  \
-    fetch "https://github.com/openclaw/goplaces/releases/download/${GOPLACES_VERSION}/goplaces_${GOPLACES_VERSION#v}_linux_amd64.tar.gz" goplaces; \
-    fetch "https://github.com/steipete/sonoscli/releases/download/${SONOSCLI_VERSION}/sonoscli_${SONOSCLI_VERSION#v}_linux_amd64.tar.gz" sonos;    \
-    fetch "https://github.com/openclaw/spogo/releases/download/${SPOGO_VERSION}/spogo_${SPOGO_VERSION#v}_spogo_linux_amd64_v1.tar.gz"   spogo;    \
-    fetch "https://github.com/xdevplatform/xurl/releases/download/${XURL_VERSION}/xurl_Linux_x86_64.tar.gz"                             xurl
+    while IFS='|' read -r kind bin url; do \
+      install_asset "$kind" "$bin" "$url"; \
+    done < <(release_assets); \
+    rm -f /tmp/release-assets.sh
 
 
 # ── 8. Pinned Python / npm tools ─────────────────────────────────────
