@@ -41,7 +41,7 @@ The build prints the exact line into the job summary.
 
 **Pinned** — `ARG` + `# renovate:` comment, one grouped PR per week:
 base image, `yq`, `yt-dlp`, `gog`, `gws`, `camsnap`, `goplaces`, `sonos`,
-`spogo`, `xurl`. Combined cadence ~30–60 releases/yr.
+`spogo`, `xurl`, `duckdb`. Combined cadence ~30–60 releases/yr.
 
 **Floating** — unpinned, refreshed whenever that layer rebuilds: every npm CLI
 (`claude-code`, `gemini-cli`, `todoist-cli`, `mcporter`, `clawhub`) and the
