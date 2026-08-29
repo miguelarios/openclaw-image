@@ -118,8 +118,8 @@ RUN echo "refresh=${FLOATING_REFRESH}" >/dev/null \
 
 
 # ── 7. Pinned release binaries (Renovate-tracked) ────────────────────
-# Cheapest layer to rebuild, so it goes last. All of these publish
-# goreleaser-style tarballs: <name>_<version-no-v>_linux_amd64.tar.gz
+# Cheapest layer to rebuild, so it goes last. Assets are installed from the
+# upstream release format recorded in release-assets.sh: raw, tar, or zip.
 
 # renovate: datasource=github-releases depName=mikefarah/yq
 ARG YQ_VERSION=v4.53.6
@@ -144,6 +144,8 @@ ARG SONOSCLI_VERSION=v0.3.4
 ARG SPOGO_VERSION=v0.10.7
 # renovate: datasource=github-releases depName=xdevplatform/xurl
 ARG XURL_VERSION=v1.3.1
+# renovate: datasource=github-releases depName=duckdb/duckdb
+ARG DUCKDB_VERSION=v1.5.5
 
 # Asset URLs live in release-assets.sh, which is also used by the lightweight
 # pull-request check. Renovate can discover new release versions, but GitHub's
@@ -166,7 +168,12 @@ RUN set -euo pipefail; \
         return; \
       fi; \
       tmp="$(mktemp -d)"; \
-      curl -fsSL "$url" | tar xz -C "$tmp"; \
+      if [ "$kind" = zip ]; then \
+        curl -fsSL -o "$tmp/archive.zip" "$url"; \
+        unzip -q "$tmp/archive.zip" -d "$tmp"; \
+      else \
+        curl -fsSL "$url" | tar xz -C "$tmp"; \
+      fi; \
       found="$(find "$tmp" -type f -name "$bin" -print -quit)"; \
       if [ -z "$found" ]; then echo "fetch: '$bin' not found in $url" >&2; return 1; fi; \
       install -m 0755 "$found" "/usr/local/bin/$bin"; \

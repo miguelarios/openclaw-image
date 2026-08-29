@@ -8,7 +8,7 @@ cd "$(dirname "$0")"
 # without downloading multi-megabyte archives or rebuilding the 4 GB image.
 while IFS='=' read -r name value; do
   export "$name=$value"
-done < <(grep -E '^ARG (YQ|YTDLP|GOGCLI|GWS|CAMSNAP|GOPLACES|SONOSCLI|SPOGO|XURL)_VERSION=' Dockerfile | sed 's/^ARG //')
+done < <(grep -E '^ARG (YQ|YTDLP|GOGCLI|GWS|CAMSNAP|GOPLACES|SONOSCLI|SPOGO|XURL|DUCKDB)_VERSION=' Dockerfile | sed 's/^ARG //')
 
 source ./release-assets.sh
 
