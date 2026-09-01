@@ -10,6 +10,17 @@ on:
       - 'README.md'
       - 'renovate.json'
       - '.gitignore'
+  # Build and smoke-test the image on the PR too, without publishing it.
+  # `validate release assets` only checks that the download URLs resolve; it
+  # cannot catch an upstream base that breaks the build or fails the smoke
+  # test. Without this, the first time a bad bump is exercised is after it is
+  # already on main. Same paths-ignore, for the same reason.
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - 'README.md'
+      - 'renovate.json'
+      - '.gitignore'
   workflow_dispatch:
     inputs:
       refresh_floating:
@@ -25,15 +36,26 @@ permissions:
   contents: read
   packages: write
 
+# Main stays serialized under one group, because two overlapping main builds
+# could interleave run numbers and race on the same registry tag. Each PR gets
+# its own group and cancels on a new push, since a PR build publishes nothing
+# and only the newest commit is worth validating.
 concurrency:
-  group: build
-  cancel-in-progress: false
+  group: build-${{ github.event.pull_request.number || 'main' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   IMAGE: ghcr.io/${{ github.repository_owner }}/openclaw
 
 jobs:
   build:
+    # A fork PR gets a read-only GITHUB_TOKEN, so the ghcr login and cache read
+    # below would fail on permissions rather than on anything about the image.
+    # The repo is public, so skip those outright instead of reporting a red
+    # check that says nothing useful.
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -91,7 +113,12 @@ jobs:
             FLOATING_REFRESH=${{ inputs.refresh_floating && github.run_id || '0' }}
           no-cache: ${{ inputs.no_cache == true }}
           cache-from: type=registry,ref=${{ env.IMAGE }}:buildcache
-          cache-to: type=registry,ref=${{ env.IMAGE }}:buildcache,mode=max
+          # A PR reads the shared cache but must not write it, or an unmerged
+          # branch gets to decide what main builds from. Written as
+          # not-a-PR-and-then, never PR-and-then-empty: the empty string is
+          # falsy in a GitHub expression, so the latter would fall through to
+          # the wrong branch of the ||.
+          cache-to: ${{ github.event_name != 'pull_request' && format('type=registry,ref={0}:buildcache,mode=max', env.IMAGE) || '' }}
 
       - name: Smoke test
         run: |
@@ -99,12 +126,29 @@ jobs:
           ./smoke-test.sh "${{ env.IMAGE }}:${{ steps.meta.outputs.tag }}"
 
       - name: Push
+        if: github.event_name != 'pull_request'
         run: docker push "${{ env.IMAGE }}:${{ steps.meta.outputs.tag }}"
+
+      # A PR build stops here. Say so explicitly, so a green check is not read
+      # as "that tag exists now".
+      - name: Report validation only
+        if: github.event_name == 'pull_request'
+        run: |
+          {
+            echo "## Validated, not published"
+            echo
+            echo "Built from base \`${{ steps.meta.outputs.base }}\` and passed the smoke test."
+            echo "No image was pushed. Merging to \`main\` publishes the tag."
+          } >> "$GITHUB_STEP_SUMMARY"
 
       # Print the exact line to paste into homelab's openclaw/compose.yaml.
       # The digest is reported alongside it for the record only — it is not
       # part of the deploy line, by choice.
+      #
+      # Skipped on a PR: nothing was pushed, so RepoDigests is empty and the
+      # `index` below would fail the job on a build that is otherwise fine.
       - name: Report deploy line
+        if: github.event_name != 'pull_request'
         run: |
           set -euo pipefail
           digest=$(docker inspect --format '{{index .RepoDigests 0}}' \
