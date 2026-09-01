@@ -108,8 +108,28 @@ RUN echo "refresh=${FLOATING_REFRESH}" >/dev/null \
 # npm globals install to the system prefix — this must stay ABOVE the
 # NPM_CONFIG_PREFIX assignment further down, or they land in /home/node
 # and get shadowed by the bind mount at runtime.
+#
+# --allow-scripts is required from base 2026.8.1 onward, which ships npm 12.
+# npm 12 blocks package install scripts by default; npm 11 and earlier ran
+# them. The four listed here need theirs to place a native binary:
+#
+#   @anthropic-ai/claude-code  postinstall fetches the platform binary. Without
+#                              it `npm i -g` still succeeds and still links
+#                              /usr/local/bin/claude, so the CLI looks
+#                              installed and then dies with "claude native
+#                              binary not installed" — which is what broke the
+#                              smoke test on the 2026.8.1 bump.
+#   @github/keytar             install script builds/downloads the native
+#   node-pty                   module. Neither is covered by a --version probe,
+#                              so a silent skip here would surface much later
+#                              as a broken keyring or PTY at runtime.
+#   @doist/todoist-cli         postinstall, kept for parity with pre-npm-12.
+#
+# Allowlist rather than a blanket re-enable: npm 12's default is a supply-chain
+# guard worth keeping for everything not named here.
 RUN echo "refresh=${FLOATING_REFRESH}" >/dev/null \
   && npm install -g \
+    --allow-scripts=@anthropic-ai/claude-code,@doist/todoist-cli,@github/keytar,node-pty \
     @anthropic-ai/claude-code \
     @google/gemini-cli \
     @doist/todoist-cli \
