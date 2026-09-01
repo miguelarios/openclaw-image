@@ -21,12 +21,22 @@
 
   "packageRules": [
     {
-      "description": "Base image ships ~104 stable releases/yr (~2/week), tagged 2026.7.1 or 2026.7.1-2 where the suffix is a rebuild of the same version. Default semver reads that suffix as a PRERELEASE, so ignoreUnstable silently skipped every -N tag and no base bump was ever offered. The regex treats the suffix as a build number instead, and its shape excludes the -beta.N, -slim, -amd64 and -arm64 variants that upstream also publishes, so allowedVersions is no longer needed.",
+      "description": [
+        "Base image ships ~104 stable releases/yr (~2/week), tagged 2026.7.1 or 2026.7.1-2 where the suffix is a rebuild of the same version. Default semver reads that suffix as a PRERELEASE, so ignoreUnstable silently skipped every -N tag and no base bump was ever offered. The regex treats the suffix as a build number instead, and its shape excludes the -beta.N, -slim, -amd64 and -arm64 variants that upstream also publishes, so allowedVersions is no longer needed.",
+        "Changelogs are off because at ~2 releases/week a month-long gap renders enough upstream release notes to fill Renovate's 58000-character PR body budget on its own. A body that large made POST /pulls fail with 'write EPIPE', which pushed the branch but opened no PR and reported only a bare 'Errored' on the dashboard. The release notes are a click away upstream; they are not worth that failure mode."
+      ],
       "matchDatasources": ["docker"],
       "matchPackageNames": ["ghcr.io/openclaw/openclaw"],
       "versioning": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)(?:-(?<build>\\d+))?$",
       "groupName": "openclaw base image",
-      "schedule": ["before 6am on monday"]
+      "schedule": ["before 6am on monday"],
+      "fetchChangeLogs": "off"
+    },
+    {
+      "description": "The base image is detected twice: by the custom regex manager via the '# renovate:' comment on ARG BASE_VERSION, and by the built-in dockerfile manager via the FROM line that interpolates that ARG. Both carry the same groupName, so a single branch held the upgrade twice and rendered its changelog twice — the other half of the oversized-PR-body failure above. The regex manager owns every tracked dependency in this repo, so the dockerfile manager's duplicate is the copy to drop. Scoped by package name so the manager keeps tracking 'docker/dockerfile'.",
+      "matchManagers": ["dockerfile"],
+      "matchPackageNames": ["ghcr.io/openclaw/openclaw"],
+      "enabled": false
     },
     {
       "description": "Pinned release binaries and language-ecosystem tools. Combined cadence ~30-60/yr, so one grouped weekly PR keeps this to about one extra rebuild a week.",
