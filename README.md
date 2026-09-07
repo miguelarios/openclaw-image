@@ -40,7 +40,7 @@ The build prints the exact line into the job summary.
 ## What is pinned, and what deliberately is not
 
 **Pinned** — `ARG` + `# renovate:` comment, one grouped PR per week:
-base image, `yq`, `yt-dlp`, `gog`, `gws`, `camsnap`, `goplaces`, `sonos`,
+base image, `yq`, `yt-dlp`, `gog`, `camsnap`, `goplaces`, `sonos`,
 `spogo`, `xurl`, `duckdb`. Combined cadence ~30–60 releases/yr.
 
 **Floating** — unpinned, refreshed whenever that layer rebuilds: every npm CLI
@@ -56,13 +56,6 @@ base image, `yq`, `yt-dlp`, `gog`, `gws`, `camsnap`, `goplaces`, `sonos`,
 
 The base image ships ~104 stable releases a year, and a base bump rebuilds
 everything below it, so these refresh roughly weekly for free.
-
-### gws is on borrowed time
-
-`gws` is being replaced by `gog`, but ~22 skills still shell out to `gws`
-(`gws-gmail`, `gws-calendar`, `gws-drive`, `gws-sheets`, `gws-docs`,
-`gws-slides`, `gws-people`, and the `recipe-*` family). Both ship until those
-are migrated. Drop the `GWS_VERSION` ARG and its fetch line once they are.
 
 ## Home-directory hygiene at start
 
