@@ -7,7 +7,6 @@ release_assets() {
 raw|yq|https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64
 raw|yt-dlp|https://github.com/yt-dlp/yt-dlp/releases/download/${YTDLP_VERSION}/yt-dlp
 tar|gog|https://github.com/openclaw/gogcli/releases/download/${GOGCLI_VERSION}/gogcli_${GOGCLI_VERSION#v}_linux_amd64.tar.gz
-tar|gws|https://github.com/googleworkspace/cli/releases/download/${GWS_VERSION}/google-workspace-cli-x86_64-unknown-linux-musl.tar.gz
 tar|camsnap|https://github.com/steipete/camsnap/releases/download/${CAMSNAP_VERSION}/camsnap_${CAMSNAP_VERSION#v}_linux_amd64.tar.gz
 tar|goplaces|https://github.com/openclaw/goplaces/releases/download/${GOPLACES_VERSION}/goplaces_${GOPLACES_VERSION#v}_linux_amd64.tar.gz
 tar|sonos|https://github.com/steipete/sonoscli/releases/download/${SONOSCLI_VERSION}/sonoscli_${SONOSCLI_VERSION#v}_linux_amd64.tar.gz
