@@ -147,13 +147,6 @@ ARG YQ_VERSION=v4.53.6
 ARG YTDLP_VERSION=2026.08.19
 # renovate: datasource=github-releases depName=openclaw/gogcli
 ARG GOGCLI_VERSION=v0.38.1
-# gws is being replaced by gog, but ~22 skills (gws-gmail, gws-calendar,
-# gws-drive, gws-sheets, gws-docs, gws-slides, gws-people, and the recipe-*
-# family) still shell out to `gws`. Both ship until those are migrated; drop
-# this ARG and its fetch line below once they are.
-# The musl build avoids the GLIBC 2.39 requirement of the default glibc build.
-# renovate: datasource=github-releases depName=googleworkspace/cli
-ARG GWS_VERSION=v0.22.5
 # renovate: datasource=github-releases depName=steipete/camsnap
 ARG CAMSNAP_VERSION=v0.4.1
 # renovate: datasource=github-releases depName=openclaw/goplaces

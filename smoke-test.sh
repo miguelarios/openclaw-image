@@ -22,7 +22,7 @@ IMAGE="${1:?usage: smoke-test.sh <image-ref>}"
 BINS="
 node openclaw
 gh yq yt-dlp jq
-gog gws camsnap goplaces sonos spogo xurl duckdb
+gog camsnap goplaces sonos spogo xurl duckdb
 uv uvx bun
 claude gemini td mcporter clawhub
 chromium
@@ -38,7 +38,7 @@ markitdown faker anydoc
 #   uvx, and the base OS utilities — provided by Debian, not by us
 VERSIONED="
 gh yq yt-dlp jq
-gog gws camsnap goplaces sonos spogo xurl duckdb
+gog camsnap goplaces sonos spogo xurl duckdb
 uv bun
 claude gemini td mcporter
 node chromium
