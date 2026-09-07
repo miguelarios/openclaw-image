@@ -64,6 +64,27 @@ everything below it, so these refresh roughly weekly for free.
 `gws-slides`, `gws-people`, and the `recipe-*` family). Both ship until those
 are migrated. Drop the `GWS_VERSION` ARG and its fetch line once they are.
 
+## Home-directory hygiene at start
+
+`/home/node` is a bind mount, so caches and staged deletions persist across
+image bumps. `entrypoint.sh` runs `prune-home.sh` in the background on every
+container start. It is an explicit allowlist:
+
+| path | rule |
+|---|---|
+| `~/.trash/*` | older than `PRUNE_TRASH_DAYS` (7) |
+| `~/tmp/*` | older than `PRUNE_TMP_DAYS` (14) |
+| `~/.npm/_npx/*` | older than `PRUNE_NPX_DAYS` (30) |
+| npm / uv / pnpm caches | each tool's own `cache clean` / `prune` |
+
+Nothing else is touched: `.claude*`, `.codex`, `.config`, `.openclaw`,
+`.npm-global`, and backup tarballs are out of scope on purpose. Every removal
+is appended to `~/.trash/prune.log`. Set `PRUNE_HOME=0` to disable.
+
+`trash <path>...` moves files into `~/.trash/YYYY-MM-DD/` instead of deleting
+them, so anything staged that way is recoverable until the prune window
+closes.
+
 ## Layer order matters
 
 Chromium is ~1.5 GB and sits above every pinned tool on purpose — anything

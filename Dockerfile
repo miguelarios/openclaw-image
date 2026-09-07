@@ -241,9 +241,12 @@ ENV BUN_INSTALL=/home/node/.bun
 ENV PATH="/home/node/.bun/bin:/home/node/.npm-global/bin:/home/node/.local/bin:/opt/bun/bin:$PATH"
 
 
-# ── Startup cleanup (stale Chromium Singleton locks) ─────────────────
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+# ── Startup cleanup ──────────────────────────────────────────────────
+# entrypoint.sh clears stale Chromium Singleton locks and runs prune-home.sh
+# in the background. `trash` is the matching mv-to-~/.trash shim so agents
+# stage deletions instead of rm'ing; prune-home.sh empties old entries.
+COPY entrypoint.sh prune-home.sh trash /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/prune-home.sh /usr/local/bin/trash
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 LABEL org.opencontainers.image.source=https://github.com/miguelarios/openclaw-image

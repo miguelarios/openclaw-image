@@ -1,0 +1,18 @@
+#!/bin/sh
+# trash — move paths into $HOME/.trash/YYYY-MM-DD/ instead of deleting them.
+# prune-home.sh empties entries older than PRUNE_TRASH_DAYS at container start.
+set -eu
+[ $# -gt 0 ] || { echo "usage: trash <path>..." >&2; exit 2; }
+dest="$HOME/.trash/$(date +%F)"
+mkdir -p "$dest"
+for p in "$@"; do
+  if [ ! -e "$p" ] && [ ! -L "$p" ]; then
+    echo "trash: $p: no such file or directory" >&2
+    continue
+  fi
+  base=$(basename -- "$p")
+  target="$dest/$base"
+  [ -e "$target" ] && target="$dest/$base.$(date +%H%M%S).$$"
+  mv -- "$p" "$target"
+  echo "$p -> $target"
+done

@@ -20,7 +20,7 @@ set -euo pipefail
 IMAGE="${1:?usage: smoke-test.sh <image-ref>}"
 
 BINS="
-node openclaw
+node openclaw trash prune-home.sh
 gh yq yt-dlp jq
 gog gws camsnap goplaces sonos spogo xurl duckdb
 uv uvx bun
