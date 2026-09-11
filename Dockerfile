@@ -146,15 +146,15 @@ ARG YQ_VERSION=v4.53.6
 # renovate: datasource=github-releases depName=yt-dlp/yt-dlp versioning=loose
 ARG YTDLP_VERSION=2026.08.19
 # renovate: datasource=github-releases depName=openclaw/gogcli
-ARG GOGCLI_VERSION=v0.38.1
+ARG GOGCLI_VERSION=v0.39.1
 # renovate: datasource=github-releases depName=steipete/camsnap
-ARG CAMSNAP_VERSION=v0.4.1
+ARG CAMSNAP_VERSION=v0.5.0
 # renovate: datasource=github-releases depName=openclaw/goplaces
 ARG GOPLACES_VERSION=v0.4.9
 # renovate: datasource=github-releases depName=steipete/sonoscli
 ARG SONOSCLI_VERSION=v0.3.4
 # renovate: datasource=github-releases depName=openclaw/spogo
-ARG SPOGO_VERSION=v0.10.7
+ARG SPOGO_VERSION=v0.11.0
 # renovate: datasource=github-releases depName=xdevplatform/xurl
 ARG XURL_VERSION=v1.3.1
 # renovate: datasource=github-releases depName=duckdb/duckdb
@@ -204,7 +204,7 @@ RUN set -euo pipefail; \
 # renovate: datasource=pypi depName=markitdown
 ARG MARKITDOWN_VERSION=0.1.7
 # renovate: datasource=pypi depName=Faker
-ARG FAKER_VERSION=40.37.0
+ARG FAKER_VERSION=40.38.0
 # renovate: datasource=pypi depName=transcriber-cli
 ARG TRANSCRIBER_CLI_VERSION=0.2.0
 # renovate: datasource=npm depName=@firecrawl/anydoc
